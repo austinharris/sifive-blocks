@@ -1,29 +1,21 @@
 package sifive.blocks.devices.xilinxvu190xdma
 
 import Chisel._
+import chisel3.experimental.{Analog,attach}
 import config._
 import diplomacy._
 import uncore.tilelink2._
 import uncore.axi4._
 import rocketchip._
-import sifive.blocks.ip.xilinx.vu190_xdma.{VU190XDMAClocksReset, VU190XDMAUnidirectionalIODDR, vu190_xdma}
+import sifive.blocks.ip.xilinx.vu190_xdma.{VU190XDMAClocksReset, VU190XDMAIODDR, vu190_xdma}
 import sifive.blocks.ip.xilinx.ibufds_gte3.IBUFDS_GTE3
 import sifive.blocks.ip.xilinx.bufg_gt.BUFG_GT
 
-class XilinxVU190XDMAPads extends Bundle with VU190XDMAUnidirectionalIODDR {
-  val _inout_c0_ddr4_dq = Bits(OUTPUT,72)
-  val _inout_c0_ddr4_dqs_c = Bits(OUTPUT,18)
-  val _inout_c0_ddr4_dqs_t = Bits(OUTPUT,18)
-}
+class XilinxVU190XDMAPads extends Bundle with VU190XDMAIODDR
 
-class XilinxVU190XDMAIO extends Bundle with VU190XDMAUnidirectionalIODDR with VU190XDMAClocksReset {
-  val _inout_c0_ddr4_dq = Bits(OUTPUT,72)
-  val _inout_c0_ddr4_dqs_c = Bits(OUTPUT,18)
-  val _inout_c0_ddr4_dqs_t = Bits(OUTPUT,18)
-  //val div2_clk = Clock(OUTPUT)
+class XilinxVU190XDMAIO extends Bundle with VU190XDMAIODDR with VU190XDMAClocksReset {
   val pcie_sys_clk_clk_p = Bool(INPUT)
   val pcie_sys_clk_clk_n = Bool(INPUT)
-  // val sys_clk_50         = Clock(OUTPUT)
   val safe_aresetn       = Bool(INPUT)
 }
 
@@ -79,9 +71,9 @@ class XilinxVU190XDMA(implicit p: Parameters) extends LazyModule {
     io.port.host_done := blackbox.io.host_done
 
     //inouts
-    io.port._inout_c0_ddr4_dq    := blackbox.io.c0_ddr4_dq
-    io.port._inout_c0_ddr4_dqs_t := blackbox.io.c0_ddr4_dqs_t
-    io.port._inout_c0_ddr4_dqs_c := blackbox.io.c0_ddr4_dqs_c
+    attach(io.port.c0_ddr4_dq, blackbox.io.c0_ddr4_dq)
+    attach(io.port.c0_ddr4_dqs_t, blackbox.io.c0_ddr4_dqs_t)
+    attach(io.port.c0_ddr4_dqs_c, blackbox.io.c0_ddr4_dqs_c)
 
     //outputs
     io.port.c0_ddr4_act_n        := blackbox.io.c0_ddr4_act_n

@@ -2,13 +2,14 @@
 package sifive.blocks.ip.xilinx.vu190_xdma
 
 import Chisel._
+import chisel3.experimental.{Analog,attach}
 import config._
 import diplomacy._
 import uncore.axi4._
 import uncore.tilelink2._
 import junctions._
 
-trait VU190XDMAUnidirectionalIODDR extends Bundle {
+trait VU190XDMAIODDR extends Bundle {
   //outputs
   val c0_ddr4_act_n            = Bits(OUTPUT,1)
   val c0_ddr4_adr              = Bits(OUTPUT,17)
@@ -21,6 +22,10 @@ trait VU190XDMAUnidirectionalIODDR extends Bundle {
   val c0_ddr4_ck_c             = Bits(OUTPUT,1)
   val c0_ddr4_reset_n          = Bool(OUTPUT)
   val c0_ddr4_par              = Bool(OUTPUT)
+
+  val c0_ddr4_dq               = Analog(72.W)
+  val c0_ddr4_dqs_t            = Analog(18.W)
+  val c0_ddr4_dqs_c            = Analog(18.W)
 
   val pcie_7x_mgt_rtl_rxn      = Bits(INPUT,1)
   val pcie_7x_mgt_rtl_rxp      = Bits(INPUT,1)
@@ -48,10 +53,7 @@ trait VU190XDMAClocksReset extends Bundle {
 class vu190_xdma() extends BlackBox 
 {
   val io = new Bundle with VU190XDMAClocksReset
-                      with VU190XDMAUnidirectionalIODDR {
-    val c0_ddr4_dq               = Bits(OUTPUT,72)
-    val c0_ddr4_dqs_t            = Bits(OUTPUT,18)
-    val c0_ddr4_dqs_c            = Bits(OUTPUT,18)
+                      with VU190XDMAIODDR {
 
     //axi_s
     //slave interface write address ports
