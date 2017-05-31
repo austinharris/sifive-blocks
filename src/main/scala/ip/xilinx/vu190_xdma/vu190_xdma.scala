@@ -17,7 +17,7 @@ trait VU190XDMAIODDR extends Bundle {
   val c0_ddr4_bg               = Bits(OUTPUT,2)
   val c0_ddr4_cke              = Bits(OUTPUT,2)
   val c0_ddr4_odt              = Bits(OUTPUT,2)
-  val c0_ddr4_cs_n             = Bits(OUTPUT,4)
+  val c0_ddr4_cs_n             = Bits(OUTPUT,2)
   val c0_ddr4_ck_t             = Bits(OUTPUT,1)
   val c0_ddr4_ck_c             = Bits(OUTPUT,1)
   val c0_ddr4_reset_n          = Bool(OUTPUT)
@@ -27,13 +27,14 @@ trait VU190XDMAIODDR extends Bundle {
   val c0_ddr4_dqs_t            = Analog(18.W)
   val c0_ddr4_dqs_c            = Analog(18.W)
 
-  val pcie_7x_mgt_rtl_rxn      = Bits(INPUT,1)
-  val pcie_7x_mgt_rtl_rxp      = Bits(INPUT,1)
-  val pcie_7x_mgt_rtl_txn      = Bits(OUTPUT,1)
-  val pcie_7x_mgt_rtl_txp      = Bits(OUTPUT,1)
+  val pcie_7x_mgt_rtl_rxn      = Bits(INPUT,8)
+  val pcie_7x_mgt_rtl_rxp      = Bits(INPUT,8)
+  val pcie_7x_mgt_rtl_txn      = Bits(OUTPUT,8)
+  val pcie_7x_mgt_rtl_txp      = Bits(OUTPUT,8)
 
   val c0_init_calib_complete   = Bool(OUTPUT)
   val host_done                = Bool(OUTPUT)
+  val user_lnk_up              = Bool(OUTPUT)
 }
 
 trait VU190XDMAClocksReset extends Bundle {
@@ -70,8 +71,8 @@ class vu190_xdma() extends BlackBox
     val c0_ddr4_s_axi_awready         = Bool(OUTPUT)
     // val c0_ddr4_s_axi_awregion       = Bits(INPUT,4)
     //slave interface write data ports
-    val c0_ddr4_s_axi_wdata           = Bits(INPUT,64)
-    val c0_ddr4_s_axi_wstrb           = Bits(INPUT,8)
+    val c0_ddr4_s_axi_wdata           = Bits(INPUT,256)
+    val c0_ddr4_s_axi_wstrb           = Bits(INPUT,32)
     val c0_ddr4_s_axi_wlast           = Bool(INPUT)
     val c0_ddr4_s_axi_wvalid          = Bool(INPUT)
     val c0_ddr4_s_axi_wready          = Bool(OUTPUT)
@@ -96,7 +97,7 @@ class vu190_xdma() extends BlackBox
     //slave interface read data ports
     val c0_ddr4_s_axi_rready          = Bool(INPUT)
     val c0_ddr4_s_axi_rid             = Bits(OUTPUT,4)
-    val c0_ddr4_s_axi_rdata           = Bits(OUTPUT,64)
+    val c0_ddr4_s_axi_rdata           = Bits(OUTPUT,256)
     val c0_ddr4_s_axi_rresp           = Bits(OUTPUT,2)
     val c0_ddr4_s_axi_rlast           = Bool(OUTPUT)
     val c0_ddr4_s_axi_rvalid          = Bool(OUTPUT) 

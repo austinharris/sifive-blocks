@@ -13,7 +13,7 @@ class BUFG_GT extends BlackBox {
     val CEMASK = Bool(INPUT)
     val CLR = Bool(INPUT)
     val CLRMASK = Bool(INPUT)
-    val DIV = Bool(INPUT)
+    val DIV = Bits(INPUT, 3)
     val I = Clock(INPUT)
     val O = Clock(OUTPUT)
   }

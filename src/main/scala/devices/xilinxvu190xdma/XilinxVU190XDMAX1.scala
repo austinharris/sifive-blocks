@@ -17,6 +17,7 @@ class XilinxVU190XDMAIO extends Bundle with VU190XDMAIODDR with VU190XDMAClocksR
   val pcie_sys_clk_clk_p = Bool(INPUT)
   val pcie_sys_clk_clk_n = Bool(INPUT)
   val safe_aresetn       = Bool(INPUT)
+  val div_clk            = Clock(OUTPUT)
 }
 
 class XilinxVU190XDMA(implicit p: Parameters) extends LazyModule {
@@ -31,13 +32,13 @@ class XilinxVU190XDMA(implicit p: Parameters) extends LazyModule {
                                                          supportsWrite = TransferSizes(1, 256*8),
                                                          supportsRead  = TransferSizes(1, 256*8),
                                                          interleavedId = Some(0))),
-                                          beatBytes = 8)))
+                                          beatBytes = 32)))
 
-  //val xing = LazyModule(new TLAsyncCrossing)
+  val xing = LazyModule(new TLAsyncCrossing)
   val toaxi4 = LazyModule(new TLToAXI4(idBits = 4))
 
-  //xing.node := node
-  val monitor = (toaxi4.node := node)
+  xing.node := node
+  val monitor = (toaxi4.node := xing.node)
   axi4 := toaxi4.node
 
    lazy val module = new LazyModuleImp(this) {
@@ -57,18 +58,19 @@ class XilinxVU190XDMA(implicit p: Parameters) extends LazyModule {
     ibufds_gte3.io.IB := io.port.pcie_sys_clk_clk_n
 
     //Generate 50MHz clock from the 100MHz pcie ref clk
-    // val bufg_gt = Module(new BUFG_GT)
-    // bufg_gt.io.CE := Bool(true)
-    // bufg_gt.io.CEMASK := Bool(false)
-    // bufg_gt.io.CLRMASK := Bool(false)
-    // bufg_gt.io.DIV := UInt(1)
-    // bufg_gt.io.I := ibufds_gte3.io.ODIV2
-    // bufg_gt.io.CLR := Bool(false)
-    // io.port.sys_clk_50 := bufg_gt.io.O
+    val bufg_gt = Module(new BUFG_GT)
+    bufg_gt.io.CE := Bool(true)
+    bufg_gt.io.CEMASK := Bool(false)
+    bufg_gt.io.CLRMASK := Bool(false)
+    bufg_gt.io.DIV := UInt(1)
+    bufg_gt.io.I := ibufds_gte3.io.ODIV2
+    bufg_gt.io.CLR := Bool(false)
+    io.port.div_clk := bufg_gt.io.O
 
     //pins to top level
     io.port.c0_init_calib_complete := blackbox.io.c0_init_calib_complete
     io.port.host_done := blackbox.io.host_done
+    io.port.user_lnk_up := blackbox.io.user_lnk_up
 
     //inouts
     attach(io.port.c0_ddr4_dq, blackbox.io.c0_ddr4_dq)
@@ -92,34 +94,23 @@ class XilinxVU190XDMA(implicit p: Parameters) extends LazyModule {
     //differential system clock
     blackbox.io.c0_sys_clk_n     := io.port.c0_sys_clk_n
     blackbox.io.c0_sys_clk_p     := io.port.c0_sys_clk_p
-    // blackbox.io.pcie_refclk      := io.port.pcie_refclk
-    // blackbox.io.pcie_sys_clk_gt  := io.port.pcie_sys_clk_gt
 
     //user interface signals
     val axi_async = axi4.bundleIn(0)
-    //xing.module.io.in_clock := clock
-    //xing.module.io.in_reset := reset
-    //xing.module.io.out_clock := blackbox.io.s01_aclk
-    // xing.module.io.out_reset := blackbox.io.s01_aresetn
-   // xing.module.io.out_reset := io.port.safe_aresetn
+    xing.module.io.in_clock := clock
+    xing.module.io.in_reset := reset
+    xing.module.io.out_clock := blackbox.io.s01_aclk
+    xing.module.io.out_reset := io.port.safe_aresetn
     toaxi4.module.clock := blackbox.io.s01_aclk
-    // toaxi4.module.reset := blackbox.io.s01_aresetn
-    toaxi4.module.reset := io.port.safe_aresetn 
+    toaxi4.module.reset := io.port.safe_aresetn
      monitor.foreach { lm =>
        lm.module.clock := blackbox.io.s01_aclk
-       // lm.module.reset := blackbox.io.s01_aresetn
        lm.module.reset := blackbox.io.s01_aresetn
      }
-    //xing.module.io.out_clock := blackbox.io.c0_ddr4_ui_clk
-    //xing.module.io.out_reset := blackbox.io.c0_ddr4_ui_clk_sync_rst
-    //toaxi4.module.clock := blackbox.io.c0_ddr4_ui_clk
-    //toaxi4.module.reset := blackbox.io.c0_ddr4_ui_clk_sync_rst
-
-    //blackbox.io.c0_ddr4_aresetn       := io.port.c0_ddr4_aresetn
 
     //slave AXI interface write address ports
     blackbox.io.c0_ddr4_s_axi_awid    := axi_async.aw.bits.id
-    blackbox.io.c0_ddr4_s_axi_awaddr  := Cat(UInt("b0000"), axi_async.aw.bits.addr) //truncation ??
+    blackbox.io.c0_ddr4_s_axi_awaddr  := axi_async.aw.bits.addr
     blackbox.io.c0_ddr4_s_axi_awlen   := axi_async.aw.bits.len
     blackbox.io.c0_ddr4_s_axi_awsize  := axi_async.aw.bits.size
     blackbox.io.c0_ddr4_s_axi_awburst := axi_async.aw.bits.burst
@@ -145,7 +136,7 @@ class XilinxVU190XDMA(implicit p: Parameters) extends LazyModule {
 
     //slave AXI interface read address ports
     blackbox.io.c0_ddr4_s_axi_arid    := axi_async.ar.bits.id
-    blackbox.io.c0_ddr4_s_axi_araddr  := Cat(UInt("b0000"), axi_async.ar.bits.addr) //truncation ??
+    blackbox.io.c0_ddr4_s_axi_araddr  := axi_async.ar.bits.addr
     blackbox.io.c0_ddr4_s_axi_arlen   := axi_async.ar.bits.len
     blackbox.io.c0_ddr4_s_axi_arsize  := axi_async.ar.bits.size
     blackbox.io.c0_ddr4_s_axi_arburst := axi_async.ar.bits.burst
