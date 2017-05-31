@@ -197,8 +197,7 @@ class VC707AXIToPCIeX1(implicit p:Parameters) extends LazyModule
       resources     = Seq(Resource(device, "ranges")),
       executable    = true,
       supportsWrite = TransferSizes(1, 256),
-      supportsRead  = TransferSizes(1, 256),
-      interleavedId = Some(0))), // the Xilinx IP is friendly
+      supportsRead  = TransferSizes(1, 256))),
     beatBytes = 8)))
 
   val control = AXI4SlaveNode(Seq(AXI4SlavePortParameters(
@@ -207,7 +206,7 @@ class VC707AXIToPCIeX1(implicit p:Parameters) extends LazyModule
       resources     = device.reg,
       supportsWrite = TransferSizes(1, 4),
       supportsRead  = TransferSizes(1, 4),
-      interleavedId = Some(0))), // no read interleaving b/c AXI-lite
+      interleavedId = Some(0))), // AXI4-Lite never interleaves responses
     beatBytes = 4)))
 
   val master = AXI4MasterNode(Seq(AXI4MasterPortParameters(
