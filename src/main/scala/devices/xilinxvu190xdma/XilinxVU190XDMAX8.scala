@@ -16,7 +16,6 @@ class XilinxVU190XDMAPads extends Bundle with VU190XDMAIODDR
 class XilinxVU190XDMAIO extends Bundle with VU190XDMAIODDR with VU190XDMAClocksReset {
   val pcie_sys_clk_clk_p = Bool(INPUT)
   val pcie_sys_clk_clk_n = Bool(INPUT)
-  val safe_aresetn       = Bool(INPUT)
 }
 
 class XilinxVU190XDMA(implicit p: Parameters) extends LazyModule {
@@ -32,14 +31,12 @@ class XilinxVU190XDMA(implicit p: Parameters) extends LazyModule {
                                                          supportsRead  = TransferSizes(1, 256*8))),
                                           beatBytes = 32)))
 
-  // val xing = LazyModule(new TLAsyncCrossing)
   val toaxi4  = LazyModule(new TLToAXI4(beatBytes = 32))
   val indexer = LazyModule(new AXI4IdIndexer(idBits = 4))
   val deint   = LazyModule(new AXI4Deinterleaver(p(coreplex.CacheBlockBytes)))
   val yank    = LazyModule(new AXI4UserYanker)
   val buffer  = LazyModule(new AXI4Buffer)
 
-  // xing.node := node
   val monitor = (toaxi4.node := node)
   axi4 := buffer.node
   buffer.node := yank.node
@@ -96,17 +93,9 @@ class XilinxVU190XDMA(implicit p: Parameters) extends LazyModule {
 
     //user interface signals
     val axi_async = axi4.bundleIn(0)
-    // xing.module.io.in_clock := clock
-    // xing.module.io.in_reset := reset
-    // xing.module.io.out_clock := blackbox.io.s01_aclk
-    // xing.module.io.out_reset := io.port.safe_aresetn
-    // toaxi4.module.clock := blackbox.io.s01_aclk
-    // toaxi4.module.reset := io.port.safe_aresetn
     toaxi4.module.clock := clock
     toaxi4.module.reset := reset
     (Seq(toaxi4, indexer, deint, yank, buffer) ++ monitor) foreach { lm =>
-      // lm.module.clock := blackbox.io.s01_aclk
-      // lm.module.reset := io.port.safe_aresetn
       lm.module.clock := clock
       lm.module.reset := reset
     }
