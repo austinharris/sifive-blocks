@@ -14,8 +14,8 @@ import sifive.blocks.ip.xilinx.bufg_gt.BUFG_GT
 class XilinxVU190XDMAPads extends Bundle with VU190XDMAIODDR
 
 class XilinxVU190XDMAIO extends Bundle with VU190XDMAIODDR with VU190XDMAClocksReset {
-  val pcie_sys_clk_clk_p = Bool(INPUT)
-  val pcie_sys_clk_clk_n = Bool(INPUT)
+  val pcie_sys_clk_p = Bool(INPUT)
+  val pcie_sys_clk_n = Bool(INPUT)
 }
 
 class XilinxVU190XDMA(implicit p: Parameters) extends LazyModule {
@@ -57,14 +57,14 @@ class XilinxVU190XDMA(implicit p: Parameters) extends LazyModule {
     blackbox.io.pcie_refclk := ibufds_gte3.io.ODIV2
     blackbox.io.pcie_sys_clk_gt := ibufds_gte3.io.O
     ibufds_gte3.io.CEB := UInt(0)
-    ibufds_gte3.io.I := io.port.pcie_sys_clk_clk_p
-    ibufds_gte3.io.IB := io.port.pcie_sys_clk_clk_n
+    ibufds_gte3.io.I := io.port.pcie_sys_clk_p
+    ibufds_gte3.io.IB := io.port.pcie_sys_clk_n
 
     //pins to top level
     io.port.c0_init_calib_complete := blackbox.io.c0_init_calib_complete
     io.port.host_done := blackbox.io.host_done
     io.port.user_lnk_up := blackbox.io.user_lnk_up
-    io.port.div_clk := blackbox.io.div_clk
+    blackbox.io.core_clk := io.port.core_clk
 
     //inouts
     attach(io.port.c0_ddr4_dq, blackbox.io.c0_ddr4_dq)

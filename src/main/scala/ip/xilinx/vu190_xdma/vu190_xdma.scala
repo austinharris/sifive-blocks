@@ -50,7 +50,7 @@ trait VU190XDMAClocksReset extends Bundle {
   val pcie_refclk              = Clock(INPUT)
   val pcie_sys_clk_gt          = Clock(INPUT)
 
-  val div_clk                  = Clock(OUTPUT)
+  val core_clk                  = Clock(INPUT)
 }
 
 class vu190_xdma() extends BlackBox 
