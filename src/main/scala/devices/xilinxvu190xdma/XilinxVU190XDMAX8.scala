@@ -63,7 +63,6 @@ class XilinxVU190XDMA(implicit p: Parameters) extends LazyModule {
     //pins to top level
     io.port.c0_init_calib_complete := blackbox.io.c0_init_calib_complete
     io.port.host_done := blackbox.io.host_done
-    io.port.user_lnk_up := blackbox.io.user_lnk_up
     blackbox.io.core_clk := io.port.core_clk
 
     //inouts

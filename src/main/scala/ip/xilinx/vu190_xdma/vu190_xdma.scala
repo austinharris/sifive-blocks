@@ -34,7 +34,6 @@ trait VU190XDMAIODDR extends Bundle {
 
   val c0_init_calib_complete   = Bool(OUTPUT)
   val host_done                = Bool(OUTPUT)
-  val user_lnk_up              = Bool(OUTPUT)
 }
 
 trait VU190XDMAClocksReset extends Bundle {
